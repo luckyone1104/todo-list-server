@@ -9,21 +9,20 @@ generator client {
 datasource db {
   provider          = "mysql"
   url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_URL")
   referentialIntegrity = "prisma"
 }
 
 model TodoList {
-  id Int @id @default(autoincrement())
+  id String @id @default(cuid())
   name String
   items TodoListItem[]
 }
 
 model TodoListItem {
-  id Int @id @default(autoincrement())
+  id String @id @default(cuid())
   description String @default("")
   completed Boolean @default(false)
 
-  todoList TodoList @relation(fields: [todoListId], references: [id ])
-  todoListId Int
+  list TodoList @relation(fields: [listId], references: [id])
+  listId String
 }

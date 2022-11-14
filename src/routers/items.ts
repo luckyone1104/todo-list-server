@@ -5,9 +5,12 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const lists = await prisma.todoList.findMany();
+        console.log(req.query);
+        const items = await prisma.todoListItem.findMany({
+            where: req.query
+        });
 
-        res.status(200).json(lists);
+        res.status(200).json(items);
     } catch (error) {
         res.status(500).json({ error })
     }
@@ -15,14 +18,11 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const list = await prisma.todoList.create({
+        const item = await prisma.todoListItem.create({
             data: req.body,
-            include: {
-                items: true
-            }
         });
 
-        res.status(201).json(list);
+        res.status(201).json(item);
     } catch (error) {
         res.status(500).json({ error })
     }
@@ -30,14 +30,14 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
-        const list = await prisma.todoList.update({
+        const item = await prisma.todoListItem.update({
             data: req.body,
             where: {
                 id: req.params.id
             }
         });
 
-        res.status(201).json(list);
+        res.status(201).json(item);
     } catch (error) {
         res.status(500).json({ error })
     }
@@ -45,13 +45,13 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const list = await prisma.todoList.delete({
+        const item = await prisma.todoList.delete({
             where: {
                 id: req.params.id
             }
         });
 
-        res.status(200).json(list);
+        res.status(200).json(item);
     } catch (error) {
         res.status(500).json({ error })
     }
