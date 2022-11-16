@@ -1,31 +1,32 @@
 #!/bin/bash
 
-# Define variables
 PORT="3306"
 CONTAINER_NAME="todo-mysql-db"
 MYSQL_DATABASE="todo"
 MYSQL_ROOT_PASSWORD="password"
 
-# Run docker container with postgres db
-CONTAINER_ID=$(
-  docker run --rm --detach -p $PORT:$PORT --name $CONTAINER_NAME \
-    -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
-    -e MYSQL_DATABASE=$MYSQL_DATABASE \
-    mysql:latest
-)
+echo $'Running docker container...\n'
 
-echo "Container id: $CONTAINER_ID"
+docker run --rm --detach -p $PORT:$PORT --name $CONTAINER_NAME \
+  -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
+  -e MYSQL_DATABASE=$MYSQL_DATABASE \
+  mysql:latest > /dev/null
 
-# Run prisma migrations
-#npx dotenv -e .env.development -- npx prisma migrate dev
+while ! docker exec $CONTAINER_NAME mysqladmin --user=root --password=$MYSQL_ROOT_PASSWORD --host "127.0.0.1" ping --silent &> /dev/null ; do
+  echo "Connecting to mysql..."
+  sleep 2
+done
 
-# Open container bash and execute enter the command-line interface to PostgreSQL
+echo $'\nPushing database...\n'
+
+npx prisma db push > /dev/null
+
 docker exec -it $CONTAINER_NAME bash
 
-# Define on_exit function which will stop container
-on_exit() {
+exit_container() {
   docker container stop $CONTAINER_NAME
 }
 
-# Bind on_exit function to EXIT
-trap on_exit EXIT
+trap exit_container EXIT
+
+# To exit and stop container type "exit"
