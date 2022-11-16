@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "dev-db": "sh dev-db.sh",
     "build": "npx tsc",
     "start": "node build/index.js",
     "format": "prettier --write src/"
