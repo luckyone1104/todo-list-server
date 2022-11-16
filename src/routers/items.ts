@@ -1,6 +1,6 @@
-import express from "express";
-import { prisma } from "../db";
-import { body, query, validationResult } from "express-validator";
+import express from 'express';
+import { prisma } from '../db';
+import { body, query, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.get(
 
         try {
             const items = await prisma.todoListItem.findMany({
-                where: req.query
+                where: req.query,
             });
 
             res.status(200).json(items);
@@ -65,8 +65,8 @@ router.put(
             const item = await prisma.todoListItem.update({
                 data: req.body,
                 where: {
-                    id: req.params?.id
-                }
+                    id: req.params?.id,
+                },
             });
 
             res.status(201).json(item);
@@ -80,8 +80,8 @@ router.delete('/:id', async (req, res, next) => {
     try {
         const item = await prisma.todoListItem.delete({
             where: {
-                id: req.params.id
-            }
+                id: req.params.id,
+            },
         });
 
         res.status(200).json(item);

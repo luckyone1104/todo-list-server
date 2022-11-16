@@ -1,5 +1,5 @@
 import express from 'express';
-import bodyParser from "body-parser";
+import bodyParser from 'body-parser';
 import lists from './routers/lists';
 import items from './routers/items';
 
@@ -13,5 +13,5 @@ server.use('/lists', lists);
 server.use('/items', items);
 
 server.listen(port, () => {
-    console.log(`Server is listening at port: ${port}`)
-})
+    console.log(`Server is listening at port: ${port}`);
+});
