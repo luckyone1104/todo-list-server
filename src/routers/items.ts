@@ -78,7 +78,7 @@ router.put(
 
 router.delete('/:id', async (req, res, next) => {
     try {
-        const item = await prisma.todoList.delete({
+        const item = await prisma.todoListItem.delete({
             where: {
                 id: req.params.id
             }

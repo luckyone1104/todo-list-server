@@ -68,9 +68,22 @@ router.put(
 
 router.delete('/:id', async (req, res, next) => {
     try {
+        const listId = req.params?.id;
+        const todoListItemsIds = await prisma.todoListItem.findMany({
+            select: {
+                id: true
+            },
+            where: {
+                listId
+            }
+        })
+        await Promise.all(
+            todoListItemsIds.map(({ id }) => prisma.todoListItem.delete({ where: { id }}))
+        );
+
         const list = await prisma.todoList.delete({
             where: {
-                id: req.params?.id
+                id: listId
             }
         });
 
