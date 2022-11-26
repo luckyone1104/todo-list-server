@@ -16,6 +16,12 @@ router.get(
 
         try {
             const items = await prisma.todoListItem.findMany({
+                select: {
+                    id: true,
+                  description: true,
+                    completed: true,
+                    listId: !req.query?.listId
+                },
                 where: req.query,
             });
 
@@ -29,7 +35,7 @@ router.get(
 router.post(
     '/',
     body(['listId', 'description']).isString().notEmpty(),
-    body('completed').optional().isString(),
+    body('completed').optional().isBoolean(),
     body('id').not().exists(),
     async (req, res, next) => {
         const errors = validationResult(req);
@@ -52,8 +58,9 @@ router.post(
 
 router.put(
     '/:id',
-    body(['completed', 'description']).optional().isString(),
-    body(['id', 'listId']).not().exists(),
+    body(`description`).optional().isString(),
+    body('completed').optional().isBoolean(),
+    body('listId').not().exists(),
     async (req, res, next) => {
         const errors = validationResult(req);
 

@@ -14,6 +14,24 @@ router.get('/', async (req, res, next) => {
     }
 });
 
+router.get('/:id', async (req, res, next) => {
+    try {
+        const list = await prisma.todoList.findFirst({
+            where: {
+               id: req.params.id
+            }
+        });
+
+        if (!list) {
+            res.status(404);
+        }
+
+        res.status(200).json(list);
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.post(
     '/',
     body('name').isString(),
