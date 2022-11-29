@@ -1,6 +1,6 @@
 import express from 'express';
-import { prisma } from '../db';
-import { body, validationResult } from 'express-validator';
+import {prisma} from '../db';
+import {z} from "zod";
 
 const router = express.Router();
 
@@ -16,6 +16,8 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
+        z.string().parse(req.params.id);
+
         const list = await prisma.todoList.findFirst({
             where: {
                id: req.params.id
@@ -34,18 +36,16 @@ router.get('/:id', async (req, res, next) => {
 
 router.post(
     '/',
-    body('name').isString(),
-    body(['id', 'items']).not().exists(),
     async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
+            z.object({
+                name: z.string(),
+            }).parse(req.body);
+
             const list = await prisma.todoList.create({
-                data: req.body,
+                data: {
+                    name: req.body.name
+                },
                 include: {
                     items: true,
                 },
@@ -53,6 +53,7 @@ router.post(
 
             res.status(201).json(list);
         } catch (error) {
+            console.log('error', error)
             next(error);
         }
     }
@@ -60,18 +61,17 @@ router.post(
 
 router.put(
     '/:id',
-    body('name').isString(),
-    body(['id', 'items']).not().exists(),
     async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
+            z.string().parse(req.params.id);
+            z.object({
+                name: z.string()
+            }).parse(req.body);
+
             const list = await prisma.todoList.update({
-                data: req.body,
+                data: {
+                    name: req.body.name,
+                },
                 where: {
                     id: req.params?.id,
                 },
@@ -86,7 +86,9 @@ router.put(
 
 router.delete('/:id', async (req, res, next) => {
     try {
-        const listId = req.params?.id;
+        z.string().parse(req.params.id);
+
+        const listId = req.params.id;
         const todoListItemsIds = await prisma.todoListItem.findMany({
             select: {
                 id: true,

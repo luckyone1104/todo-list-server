@@ -1,28 +1,28 @@
 import express from 'express';
-import { prisma } from '../db';
-import { body, query, validationResult } from 'express-validator';
+import {prisma} from '../db';
+import {z} from "zod";
 
 const router = express.Router();
 
 router.get(
     '/',
-    query('listId').optional().isString(),
     async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
+            const schema = z.object({
+                listId: z.string()
+            });
+
+            schema.parse(req.query);
+
             const items = await prisma.todoListItem.findMany({
                 select: {
                     id: true,
                   description: true,
                     completed: true,
-                    listId: !req.query?.listId
                 },
-                where: req.query,
+                where: {
+                    listId: (req.query as z.infer<typeof schema>).listId
+                },
             });
 
             res.status(200).json(items);
@@ -34,23 +34,23 @@ router.get(
 
 router.post(
     '/',
-    body(['listId', 'description']).isString().notEmpty(),
-    body('completed').optional().isBoolean(),
-    body('id').not().exists(),
     async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
+           z.object({
+                listId: z.string(),
+                description: z.string(),
+            }).parse(req.body);
+
             const item = await prisma.todoListItem.create({
-                data: req.body,
+                data: {
+                    listId: req.body.listId,
+                    description: req.body.listId,
+                },
             });
 
             res.status(201).json(item);
         } catch (error) {
+
             next(error);
         }
     }
@@ -58,19 +58,19 @@ router.post(
 
 router.put(
     '/:id',
-    body(`description`).optional().isString(),
-    body('completed').optional().isBoolean(),
-    body('listId').not().exists(),
     async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
+            z.string().parse(req.params.id);
+            z.object({
+                description: z.string().optional(),
+                completed: z.boolean().optional(),
+            }).parse(req.body);
+
             const item = await prisma.todoListItem.update({
-                data: req.body,
+                data: {
+                    description: req.body.description,
+                    completed: req.body.completed,
+                },
                 where: {
                     id: req.params?.id,
                 },

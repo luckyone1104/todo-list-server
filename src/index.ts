@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import lists from './routers/lists';
 import items from './routers/items';
+import {errorHandler} from "./errorHandler";
 
 const server = express();
 const port = process.env.PORT || 3001;
@@ -13,6 +14,8 @@ server.use(cors());
 
 server.use('/lists', lists);
 server.use('/items', items);
+
+server.use(errorHandler);
 
 server.listen(port, () => {
     console.log(`Server is listening at port: ${port}`);
