@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import lists from './routers/lists';
 import items from './routers/items';
-import {errorHandler} from "./errorHandler";
+import { errorHandler } from './errorHandler';
 
 const server = express();
 const port = process.env.PORT || 3001;

@@ -1,5 +1,5 @@
-import {ErrorRequestHandler} from "express-serve-static-core";
-import {ZodError} from "zod";
+import { ErrorRequestHandler } from 'express-serve-static-core';
+import { ZodError } from 'zod';
 
 export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
     if (error instanceof ZodError) {
@@ -7,4 +7,4 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
     }
 
     next(error);
-}
+};
