@@ -21,6 +21,9 @@ echo $'\nPushing database...\n'
 
 npx prisma db push > /dev/null
 
+echo $'Seeding database...\n'
+npx prisma db seed > /dev/null
+
 docker exec -it $CONTAINER_NAME bash
 
 exit_container() {
