@@ -22,6 +22,7 @@ model TodoListItem {
   id String @id @default(cuid())
   description String @default("")
   completed Boolean @default(false)
+  position Decimal
 
   list TodoList @relation(fields: [listId], references: [id])
   listId String

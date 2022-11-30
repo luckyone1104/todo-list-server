@@ -22,6 +22,15 @@ router.get('/:id', async (req, res, next) => {
             where: {
                 id: req.params.id,
             },
+            include: {
+                items: {
+                    select: {
+                        id: true,
+                        description: true,
+                        completed: true,
+                    },
+                },
+            },
         });
 
         if (!list) {
