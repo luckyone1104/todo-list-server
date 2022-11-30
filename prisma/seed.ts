@@ -9,19 +9,19 @@ const listItems = [
   },
   {
     description: 'Item #2',
-    position: new Decimal(1)
+    position: new Decimal(2)
   },
   {
     description: 'Item #3',
-    position: new Decimal(1)
+    position: new Decimal(3)
   },
   {
     description: 'Item #4',
-    position: new Decimal(1)
+    position: new Decimal(4)
   },
   {
     description: 'Item #5',
-    position: new Decimal(1)
+    position: new Decimal(5)
   },
 ];
 
