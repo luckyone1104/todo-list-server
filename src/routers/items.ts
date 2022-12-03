@@ -2,6 +2,10 @@ import express from 'express';
 import { prisma } from '../db';
 import { z } from 'zod';
 import { Decimal } from '@prisma/client/runtime';
+import {
+    WRONG_ITEM_ID_ERROR_MESSAGE,
+    WRONG_LIST_ID_ERROR_MESSAGE,
+} from '../const';
 
 const router = express.Router();
 
@@ -30,6 +34,7 @@ router.get('/', async (req, res, next) => {
 
         res.status(200).json(items);
     } catch (error) {
+        /* istanbul ignore next */
         next(error);
     }
 });
@@ -37,9 +42,21 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
     try {
         z.object({
-            listId: z.string(),
-            description: z.string(),
+            listId: z.string().min(1),
+            description: z.string().min(1),
         }).parse(req.body);
+
+        const listId = req.body.listId;
+
+        const listExists = !!(await prisma.todoList.findFirst({
+            where: { id: listId },
+        }));
+
+        if (!listExists) {
+            res.status(404).send({
+                error: WRONG_LIST_ID_ERROR_MESSAGE,
+            });
+        }
 
         const payload = await prisma.todoListItem.findFirst({
             select: {
@@ -49,7 +66,7 @@ router.post('/', async (req, res, next) => {
                 position: 'desc',
             },
             where: {
-                listId: req.body.listId,
+                listId,
             },
         });
 
@@ -57,8 +74,13 @@ router.post('/', async (req, res, next) => {
         const nextPosition = Math.ceil(lastPosition as number) + 1;
 
         const item = await prisma.todoListItem.create({
+            select: {
+                id: true,
+                description: true,
+                completed: true,
+            },
             data: {
-                listId: req.body.listId,
+                listId,
                 description: req.body.description,
                 position: nextPosition,
             },
@@ -73,14 +95,14 @@ router.post('/', async (req, res, next) => {
 router.put('/reorder', async (req, res, next) => {
     try {
         const querySchema = z.object({
-            listId: z.string(),
+            listId: z.string().min(1),
         });
 
         querySchema.parse(req.query);
 
         const bodySchema = z.array(
             z.object({
-                id: z.string(),
+                id: z.string().min(1),
             })
         );
 
@@ -175,11 +197,23 @@ router.put('/reorder', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
     try {
-        z.string().parse(req.params.id);
+        const id = req.params.id;
+
+        z.string().min(1).parse(id);
         z.object({
-            description: z.string().optional(),
+            description: z.string().min(1).optional(),
             completed: z.boolean().optional(),
         }).parse(req.body);
+
+        const exists = !!(await prisma.todoListItem.findFirst({
+            where: { id },
+        }));
+
+        if (!exists) {
+            res.status(404).json({
+                error: WRONG_ITEM_ID_ERROR_MESSAGE,
+            });
+        }
 
         const item = await prisma.todoListItem.update({
             data: {
@@ -187,11 +221,11 @@ router.put('/:id', async (req, res, next) => {
                 completed: req.body.completed,
             },
             where: {
-                id: req.params?.id,
+                id,
             },
         });
 
-        res.status(201).json(item);
+        res.status(200).json(item);
     } catch (error) {
         next(error);
     }
@@ -199,14 +233,27 @@ router.put('/:id', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
     try {
+        const id = req.params.id;
+
+        const exists = !!(await prisma.todoListItem.findFirst({
+            where: { id },
+        }));
+
+        if (!exists) {
+            res.status(404).json({
+                error: WRONG_ITEM_ID_ERROR_MESSAGE,
+            });
+        }
+
         const item = await prisma.todoListItem.delete({
             where: {
-                id: req.params.id,
+                id,
             },
         });
 
         res.status(200).json(item);
     } catch (error) {
+        /* istanbul ignore next */
         next(error);
     }
 });

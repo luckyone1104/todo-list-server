@@ -1,10 +1,9 @@
 import express from 'express';
 import { prisma } from '../db';
 import { z } from 'zod';
+import { WRONG_LIST_ID_ERROR_MESSAGE } from '../const';
 
 const router = express.Router();
-
-const WRONG_ID_ERROR_MESSAGE = 'List with such id does not exist';
 
 router.get('/', async (req, res, next) => {
     try {
@@ -12,6 +11,7 @@ router.get('/', async (req, res, next) => {
 
         res.status(200).json(lists);
     } catch (error) {
+        /* istanbul ignore next */
         next(error);
     }
 });
@@ -37,7 +37,7 @@ router.get('/:id', async (req, res, next) => {
 
         if (!list) {
             res.status(404).json({
-                error: WRONG_ID_ERROR_MESSAGE,
+                error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
         }
 
@@ -50,7 +50,7 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
     try {
         z.object({
-            name: z.string(),
+            name: z.string().min(1),
         }).parse(req.body);
 
         const list = await prisma.todoList.create({
@@ -81,7 +81,7 @@ router.put('/:id', async (req, res, next) => {
 
         if (!exists) {
             res.status(404).json({
-                error: WRONG_ID_ERROR_MESSAGE,
+                error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
         }
 
@@ -112,7 +112,7 @@ router.delete('/:id', async (req, res, next) => {
 
         if (!exists) {
             res.status(404).json({
-                error: WRONG_ID_ERROR_MESSAGE,
+                error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
         }
 
@@ -138,6 +138,7 @@ router.delete('/:id', async (req, res, next) => {
 
         res.status(200).json(list);
     } catch (error) {
+        /* istanbul ignore next */
         next(error);
     }
 });

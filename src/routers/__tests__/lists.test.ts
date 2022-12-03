@@ -1,8 +1,6 @@
 import request from 'supertest';
 import app from '../../app';
-import { clearDB, mockedList, seedDB } from './utils';
-
-beforeAll(clearDB);
+import { mockLists, mockTodoItems } from '../../__tests__/mocks';
 
 describe('/lists', () => {
     describe('GET /lists', () => {
@@ -15,21 +13,15 @@ describe('/lists', () => {
     });
 
     describe('GET /lists/:id', () => {
-        beforeAll(seedDB);
-        afterAll(clearDB);
-
         test('should get one list with an id', async () => {
-            const response = await request(app).get(`/lists/${mockedList.id}`);
+            const mockList = mockLists[0];
+
+            const response = await request(app).get(`/lists/${mockList.id}`);
 
             expect(response.statusCode).toBe(200);
-
-            expect(response.body).toHaveProperty('name');
-            expect(response.body).toHaveProperty('id');
-            expect(response.body).toHaveProperty('items');
-
-            expect(response.body.name).toBe(mockedList.name);
-            expect(response.body.id).toBe(mockedList.id);
-            expect(mockedList.items).toMatchObject(response.body.items);
+            expect(response.body.name).toBe(mockLists[0].name);
+            expect(response.body.id).toBe(mockList.id);
+            expect(mockTodoItems).toMatchObject(response.body.items);
         });
 
         test('should respond with 404 because of non existing id', async () => {
@@ -46,17 +38,12 @@ describe('/lists', () => {
             const response = await request(app).post('/lists').send({ name });
 
             expect(response.statusCode).toBe(201);
-
-            expect(response.body).toHaveProperty('id');
-            expect(response.body).toHaveProperty('name');
-            expect(response.body).toHaveProperty('items');
-
             expect(typeof response.body.id).toBe('string');
             expect(response.body.name).toBe(name);
             expect(response.body.items).toEqual([]);
         });
 
-        test('should respond with 404 because of name property missing', async () => {
+        test('should respond with 400 because of name property missing', async () => {
             const response = await request(app).post('/lists').send();
 
             expect(response.statusCode).toBe(400);
@@ -72,15 +59,20 @@ describe('/lists', () => {
     });
 
     describe('PUT /lists/:id', () => {
-        beforeAll(seedDB);
-        afterAll(clearDB);
-
-        test('should update list id', async () => {
+        test('should update list name', async () => {
+            const id = mockLists[0].id;
             const name = 'Updated name';
 
-            const response = await request(app).put('/lists/1').send({ name });
+            const response = await request(app)
+                .put(`/lists/${id}`)
+                .send({ name });
 
             expect(response.body.name).toBe(name);
+
+            // rollback
+            await request(app)
+                .put(`/lists/${id}`)
+                .send({ name: mockLists[0].name });
         });
 
         test('should throw if id does not exist', async () => {
@@ -101,7 +93,7 @@ describe('/lists', () => {
             expect(response.statusCode).toBe(400);
         });
 
-        test('should throw if name is wring type', async () => {
+        test('should throw if name is wrong type', async () => {
             const response = await request(app)
                 .put('/lists/1')
                 .send({ name: 1 });
@@ -111,21 +103,40 @@ describe('/lists', () => {
     });
 
     describe('DELETE lists/:id', () => {
-        beforeEach(seedDB);
-        afterEach(clearDB);
-
         test('should delete list and all its items', async () => {
-            const response = await request(app).delete('/lists/1');
+            const postListRequest = await request(app)
+                .post('/lists')
+                .send({ name: 'New list' });
 
-            expect(response.statusCode).toBe(200);
+            const listId = postListRequest.body.id;
 
-            const response2 = await request(app).get('/lists/1');
+            const postItemPromises = [];
 
-            expect(response2.statusCode).toBe(404);
+            for (let i = 0; i < 3; i++) {
+                postItemPromises.push(
+                    request(app)
+                        .post('/items')
+                        .send({ description: `New item #${i}`, listId })
+                );
+            }
 
-            const response3 = await request(app).get('/items?listId=1');
+            await Promise.all(postItemPromises);
 
-            expect(response3.body).toEqual([]);
+            const deleteResponse = await request(app).delete(
+                `/lists/${listId}`
+            );
+
+            expect(deleteResponse.statusCode).toBe(200);
+
+            const getListResponse = await request(app).get(`/lists/${listId}`);
+
+            expect(getListResponse.statusCode).toBe(404);
+
+            const getItemsResponse = await request(app).get(
+                `/items?listId=${listId}`
+            );
+
+            expect(getItemsResponse.body).toEqual([]);
         });
 
         test('should respond with 404 because of wrong id', async () => {
