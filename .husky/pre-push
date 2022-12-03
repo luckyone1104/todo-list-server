@@ -3,15 +3,7 @@
 
 current_branch=$(git symbolic-ref --short head)
 
-cmd="npm test"
-
 if [ "$current_branch" = "main" ]; then
-    echo "you are on $current_branch, running tests"
-    eval $cmd
-
-    if ! eval "$cmd"; then
-        echo "failed $cmd" >&2
-        exit 1
-    fi
+    npm test
 fi
 exit 0
