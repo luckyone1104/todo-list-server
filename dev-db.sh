@@ -2,7 +2,7 @@
 
 PORT="3306"
 CONTAINER_NAME="todo-mysql-db"
-MYSQL_DATABASE="todo"
+MYSQL_DATABASE="todo-list"
 MYSQL_ROOT_PASSWORD="password"
 
 echo $'Running docker container...\n'
