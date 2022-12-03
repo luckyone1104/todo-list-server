@@ -1,4 +1,17 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npm test
+current_branch=$(git symbolic-ref --short head)
+
+cmd="npm test"
+
+if [ "$current_branch" = "main" ]; then
+    echo "you are on $current_branch, running tests"
+    eval $cmd
+
+    if ! eval "$cmd"; then
+        echo "failed $cmd" >&2
+        exit 1
+    fi
+fi
+exit 0
