@@ -1,5 +1,5 @@
 const { prisma } = require('../db');
-const { mockLists, mockTodoItems } = require('./mocks');
+const { mockLists, mockAllTodoItems } = require('./mocks');
 
 const clearDB = async () => {
     try {
@@ -16,7 +16,7 @@ const seedDB = async () => {
     });
 
     await prisma.todoListItem.createMany({
-        data: mockTodoItems,
+        data: mockAllTodoItems,
     });
 };
 

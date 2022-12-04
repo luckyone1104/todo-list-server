@@ -1,6 +1,12 @@
 import request from 'supertest';
 import app from '../../app';
-import { mockLists, mockTodoItems } from '../../__tests__/mocks';
+import { mockLists, mockAllTodoItems } from '../../__tests__/mocks';
+
+const mockList = mockLists[0];
+const mockListId = mockList.id;
+const mockItems = mockAllTodoItems.filter(
+    (item) => item.listId === mockList.id
+);
 
 describe('/lists', () => {
     describe('GET /lists', () => {
@@ -14,14 +20,12 @@ describe('/lists', () => {
 
     describe('GET /lists/:id', () => {
         test('should get one list with an id', async () => {
-            const mockList = mockLists[0];
-
             const response = await request(app).get(`/lists/${mockList.id}`);
 
             expect(response.statusCode).toBe(200);
             expect(response.body.name).toBe(mockLists[0].name);
             expect(response.body.id).toBe(mockList.id);
-            expect(mockTodoItems).toMatchObject(response.body.items);
+            expect(mockItems).toMatchObject(response.body.items);
         });
 
         test('should respond with 404 because of non existing id', async () => {
@@ -34,7 +38,6 @@ describe('/lists', () => {
     describe('POST /lists', () => {
         test('should create one list', async () => {
             const name = 'List name';
-
             const response = await request(app).post('/lists').send({ name });
 
             expect(response.statusCode).toBe(201);
@@ -60,19 +63,13 @@ describe('/lists', () => {
 
     describe('PUT /lists/:id', () => {
         test('should update list name', async () => {
-            const id = mockLists[0].id;
             const name = 'Updated name';
 
             const response = await request(app)
-                .put(`/lists/${id}`)
+                .put(`/lists/${mockListId}`)
                 .send({ name });
 
             expect(response.body.name).toBe(name);
-
-            // rollback
-            await request(app)
-                .put(`/lists/${id}`)
-                .send({ name: mockLists[0].name });
         });
 
         test('should throw if id does not exist', async () => {
@@ -87,7 +84,7 @@ describe('/lists', () => {
 
         test('should throw if name is an empty string', async () => {
             const response = await request(app)
-                .put('/lists/1')
+                .put(`/lists/${mockListId}`)
                 .send({ name: '' });
 
             expect(response.statusCode).toBe(400);
@@ -95,7 +92,7 @@ describe('/lists', () => {
 
         test('should throw if name is wrong type', async () => {
             const response = await request(app)
-                .put('/lists/1')
+                .put(`/lists/${mockListId}`)
                 .send({ name: 1 });
 
             expect(response.statusCode).toBe(400);
@@ -104,42 +101,26 @@ describe('/lists', () => {
 
     describe('DELETE lists/:id', () => {
         test('should delete list and all its items', async () => {
-            const postListRequest = await request(app)
-                .post('/lists')
-                .send({ name: 'New list' });
-
-            const listId = postListRequest.body.id;
-
-            const postItemPromises = [];
-
-            for (let i = 0; i < 3; i++) {
-                postItemPromises.push(
-                    request(app)
-                        .post('/items')
-                        .send({ description: `New item #${i}`, listId })
-                );
-            }
-
-            await Promise.all(postItemPromises);
-
             const deleteResponse = await request(app).delete(
-                `/lists/${listId}`
+                `/lists/${mockListId}`
             );
 
             expect(deleteResponse.statusCode).toBe(200);
 
-            const getListResponse = await request(app).get(`/lists/${listId}`);
+            const getListResponse = await request(app).get(
+                `/lists/${mockListId}`
+            );
 
             expect(getListResponse.statusCode).toBe(404);
 
             const getItemsResponse = await request(app).get(
-                `/items?listId=${listId}`
+                `/items?listId=${mockListId}`
             );
 
             expect(getItemsResponse.body).toEqual([]);
         });
 
-        test('should respond with 404 because of wrong id', async () => {
+        test('should respond with 404 because of non existing id', async () => {
             const response = await request(app).delete(
                 '/lists/non-existing-id'
             );

@@ -1,17 +1,24 @@
 import { Decimal } from '@prisma/client/runtime';
 
 export const mockLists = [
+    // used in list tests
     {
         id: '1',
         name: 'List #1',
     },
+    // used in item tests
     {
         id: '2',
         name: 'List #2',
     },
+    // used in item reordering tests
+    {
+        id: '3',
+        name: 'List #3',
+    },
 ];
 
-export const mockTodoItems = [
+export const mockAllTodoItems = [
     {
         id: '1',
         description: 'Item #1',
@@ -46,5 +53,47 @@ export const mockTodoItems = [
         completed: false,
         position: new Decimal(5),
         listId: '1',
+    },
+    {
+        id: '6',
+        description: 'Item #6',
+        completed: false,
+        position: new Decimal(6),
+        listId: '2',
+    },
+    {
+        id: '7',
+        description: 'Item #7',
+        completed: false,
+        position: new Decimal(7),
+        listId: '3',
+    },
+    {
+        id: '8',
+        description: 'Item #8',
+        completed: false,
+        position: new Decimal(8),
+        listId: '3',
+    },
+    {
+        id: '9',
+        description: 'Item #9',
+        completed: false,
+        position: new Decimal(9),
+        listId: '3',
+    },
+    {
+        id: '10',
+        description: 'Item #10',
+        completed: false,
+        position: new Decimal(10),
+        listId: '3',
+    },
+    {
+        id: '11',
+        description: 'Item #11',
+        completed: false,
+        position: new Decimal(11),
+        listId: '3',
     },
 ];
