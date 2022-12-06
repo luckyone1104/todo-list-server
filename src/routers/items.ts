@@ -57,9 +57,10 @@ router.post('/', async (req, res, next) => {
         }));
 
         if (!listExists) {
-            res.status(404).send({
+            res.status(404).json({
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const payload = await prisma.todoListItem.findFirst({
@@ -113,9 +114,10 @@ router.put('/reorder', async (req, res, next) => {
         }));
 
         if (!listExists) {
-            res.status(404).send({
+            res.status(404).json({
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const prevItems = await prisma.todoListItem.findMany({
@@ -139,9 +141,10 @@ router.put('/reorder', async (req, res, next) => {
         );
 
         if (!isEqualDespiteOrder(prevItemIds, newItemIds)) {
-            res.status(400).send({
+            res.status(400).json({
                 error: 'Previous and new items are not equal',
             });
+            return;
         }
 
         const [, newIdx] = findMovedItemIndexes(prevItems, newItems);
@@ -192,6 +195,7 @@ router.put('/:id', async (req, res, next) => {
             res.status(404).json({
                 error: WRONG_ITEM_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const item = await prisma.todoListItem.update({
@@ -222,6 +226,7 @@ router.delete('/:id', async (req, res, next) => {
             res.status(404).json({
                 error: WRONG_ITEM_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const item = await prisma.todoListItem.delete({

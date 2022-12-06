@@ -39,6 +39,7 @@ router.get('/:id', async (req, res, next) => {
             res.status(404).json({
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         res.status(200).json(list);
@@ -49,13 +50,17 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
     try {
-        z.object({
+        const schema = z.object({
             name: z.string().min(1),
-        }).parse(req.body);
+        });
+
+        schema.parse(req.body);
+
+        const { name } = req.body as z.infer<typeof schema>;
 
         const list = await prisma.todoList.create({
             data: {
-                name: req.body.name,
+                name,
             },
             include: {
                 items: true,
@@ -83,6 +88,7 @@ router.put('/:id', async (req, res, next) => {
             res.status(404).json({
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const list = await prisma.todoList.update({
@@ -114,6 +120,7 @@ router.delete('/:id', async (req, res, next) => {
             res.status(404).json({
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
+            return;
         }
 
         const todoListItemsIds = await prisma.todoListItem.findMany({
