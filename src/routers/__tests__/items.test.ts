@@ -31,12 +31,10 @@ describe('/items', () => {
         });
 
         test('should respond with 404 because of non existing list id', async () => {
-            const response = await request(app)
-                .post('/items')
-                .send({
-                    listId: 'non-existing-list-id',
-                    description: 'Should fail',
-                });
+            const response = await request(app).post('/items').send({
+                listId: 'non-existing-list-id',
+                description: 'Should fail',
+            });
 
             expect(response.statusCode).toBe(404);
         });
@@ -124,10 +122,14 @@ describe('/items', () => {
                 mockItemIds[4],
                 mockItemIds[3],
             ];
+            const body = {
+                listId: mockListId,
+                itemIds: reorderedItemIds,
+            };
 
             const response = await request(app)
-                .put(`/items/reorder?listId=${mockListId}`)
-                .send(reorderedItemIds);
+                .put(`/items/reorder`)
+                .send(body);
 
             expect(response.statusCode).toBe(200);
             expect(
@@ -136,15 +138,18 @@ describe('/items', () => {
         });
 
         test('should respond with 404 because of non existing list id', async () => {
-            const response = await request(app)
-                .put('/items/reorder?listId=non-existing-list-id')
-                .send([]);
+            const response = await request(app).put('/items/reorder').send({
+                listId: 'non-existing-list-id',
+                itemIds: [],
+            });
 
             expect(response.statusCode).toBe(404);
         });
 
         test('should respond with 400 because of listId missing', async () => {
-            const response = await request(app).put('/items/reorder').send([]);
+            const response = await request(app).put('/items/reorder').send({
+                itemIds: [],
+            });
 
             expect(response.statusCode).toBe(400);
         });
@@ -152,9 +157,10 @@ describe('/items', () => {
         test('should respond with 400 because of items are not equal', async () => {
             const reorderedItemIds = [...mockItemIds, 'non-existing-id'];
 
-            const response = await request(app)
-                .put(`/items/reorder?listId=${mockListId}`)
-                .send(reorderedItemIds);
+            const response = await request(app).put(`/items/reorder`).send({
+                listId: mockListId,
+                itemIds: reorderedItemIds,
+            });
 
             expect(response.statusCode).toBe(400);
         });

@@ -98,13 +98,15 @@ router.post('/', async (req, res, next) => {
 
 router.put('/reorder', async (req, res, next) => {
     try {
-        const querySchema = z.object({
+        const bodySchema = z.object({
+            itemIds: z.array(z.string().min(1)),
             listId: z.string().min(1),
         });
 
-        querySchema.parse(req.query);
+        bodySchema.parse(req.body);
+        const body = req.body as z.infer<typeof bodySchema>;
 
-        const listId = (req.query as z.infer<typeof querySchema>).listId;
+        const listId = body.listId;
 
         const listExists = !!(await prisma.todoList.findFirst({
             where: { id: listId },
@@ -115,10 +117,6 @@ router.put('/reorder', async (req, res, next) => {
                 error: WRONG_LIST_ID_ERROR_MESSAGE,
             });
         }
-
-        const bodySchema = z.array(z.string().min(1));
-
-        bodySchema.parse(req.body);
 
         const prevItems = await prisma.todoListItem.findMany({
             select: {
@@ -134,7 +132,7 @@ router.put('/reorder', async (req, res, next) => {
         });
 
         const prevItemIds = prevItems.map((item) => item.id);
-        const newItemIds = req.body as z.infer<typeof bodySchema>;
+        const newItemIds = body.itemIds;
 
         const newItems = newItemIds.map(
             (id) => prevItems.find((item) => item.id === id)!
