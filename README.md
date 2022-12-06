@@ -96,3 +96,7 @@ DELETE /items/:id
 | Parameter  | Type     | Description                   |
 |------------|----------|-------------------------------|
 | `id`       | `string` | **Required**. Route parameter |
+
+## TODO
+
+- [ ] Add authentication and authorization so that users can only access their own lists, share lists with other users and collaborate on them.
