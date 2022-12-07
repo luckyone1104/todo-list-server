@@ -18,8 +18,6 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
-        z.string().parse(req.params.id);
-
         const list = await prisma.todoList.findFirst({
             where: {
                 id: req.params.id,
@@ -44,6 +42,7 @@ router.get('/:id', async (req, res, next) => {
 
         res.status(200).json(list);
     } catch (error) {
+        /* istanbul ignore next */
         next(error);
     }
 });

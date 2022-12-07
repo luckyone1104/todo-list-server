@@ -1,5 +1,20 @@
 import { Decimal } from '@prisma/client/runtime';
 
+export const mockUsers = [
+    {
+        id: '1',
+        name: 'User 1',
+        email: 'user1@mail.mock',
+        password: 'mock-password',
+    },
+    {
+        id: '2',
+        name: 'User 2',
+        email: 'user2@mail.mock',
+        password: 'mock-password',
+    },
+];
+
 export const mockLists = [
     // used in list tests
     {
@@ -15,6 +30,16 @@ export const mockLists = [
     {
         id: '3',
         name: 'List #3',
+    },
+    {
+        id: '4',
+        name: 'List #4',
+        userId: mockUsers[0].id,
+    },
+    {
+        id: '5',
+        name: 'List #5',
+        userId: mockUsers[1].id,
     },
 ];
 
